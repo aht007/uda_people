@@ -1,5 +1,4 @@
 - name: copy backend app
-  shell: ls
   synchronize:
     src: /tmp/workspace/backend/
     dest: ~/web/
