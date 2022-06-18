@@ -178,9 +178,6 @@ jobs:
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
-    parameters:
-      workflow_id:
-        type: string
     steps:
       - checkout
       - attach_workspace:
@@ -203,8 +200,6 @@ jobs:
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
                 curl https://kvdb.io/AYFnzAZ9FsMiksutaHQrvr/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - destroy-environment:
-          workflow_id: << parameters.workflow_id >>
 
   deploy-frontend:
     docker:
@@ -292,7 +287,6 @@ workflows:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           requires: [deploy-infrastructure]
       - run-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           requires: [configure_infrastructure]
       - deploy-frontend:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
