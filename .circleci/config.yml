@@ -242,6 +242,7 @@ jobs:
     parameters:
       workflow_id:
         type: string
+    working_directory : /tmp/workspace
     steps:
       - checkout
       - add_ssh_keys:
