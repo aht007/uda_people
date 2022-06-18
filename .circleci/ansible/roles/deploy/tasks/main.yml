@@ -1,6 +1,6 @@
 - name: copy backend app
   synchronize:
-    src:  ~/backend/
+    src:  /tmp/backend/
     dest: ~/web/
 
 - name: Start backend
