@@ -147,6 +147,33 @@ jobs:
       - destroy-environment:
           workflow_id: << parameters.workflow_id >>
 
+  configure_infrastructure:
+    docker:
+      - image: python:3.8
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["44:51:0c:53:07:0c:55:7c:f2:d5:dd:c7:f9:18:88:6d"]
+      - attach_workspace:
+          at : ~/
+      - run:
+          name: Install Ansible
+          command: |
+            apt-get update
+            apt-get install -y awscli
+            pip install ansible
+            cat .circleci/ansible/inventory.txt
+      - run:
+          name: Run Playbook and Configure server
+          command: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
+
 workflows:
   default:
     jobs:
@@ -163,3 +190,6 @@ workflows:
       - deploy-infrastructure:
           requires: [build-backend, build-frontend]
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - configure_infrastructure:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          requires: [deploy-infrastructure]

@@ -1,0 +1,35 @@
+---
+- name: "update apt packages."
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: "Install NodeJs and NPM"
+  apt:
+    name:
+      - "nodejs"
+      - "npm"
+    state: latest
+    update_cache: yes
+  
+- name: "Install pm2"
+  npm:
+    name: "pm2"
+    global: "yes"
+    state: latest
+
+- name: "Install Python"
+  apt:
+    name:
+      - "python3-pip"
+      - "python3-ven"
+
+- name: "Creates directory"
+  file:
+    path: ~/web
+    state: directory
