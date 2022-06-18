@@ -158,9 +158,9 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["44:51:0c:53:07:0c:55:7c:f2:d5:dd:c7:f9:18:88:6d"]
       - attach_workspace:
-          at : ~/
+          at: ~/
       - run:
-          name: Install Ansible
+          name: Install Dependencies
           command: |
             apt-get update
             apt-get install -y awscli
@@ -171,6 +171,104 @@ jobs:
           command: |
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
+
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Dependencies
+          command: |
+            apt-get update
+            apt-get install -y awscli
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.log
+      - run:
+          name: Send migration results to memstash
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.log
+            then
+                # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
+                curl https://kvdb.io/AYFnzAZ9FsMiksutaHQrvr/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
+
+  deploy-frontend:
+    docker:
+      - image: nikolaik/python-nodejs:python3.8-nodejs14
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            # Install Aws CLI Ansible
+            apt-get update
+            apt-get install -y awscli ansible
+            # Install dependencies
+            cd frontend
+            npm install
+
+      - run:
+          name: Get backend url
+          command: |
+            BACKEND_IP=$(sed -n '2p' .circleci/ansible/inventory.txt)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
+
+  deploy-backend:
+    docker:
+      - image: nikolaik/python-nodejs:python3.8-nodejs14
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["44:51:0c:53:07:0c:55:7c:f2:d5:dd:c7:f9:18:88:6d"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: install python and aws cli
+          command: |
+            apt-get update
+            apt-get install -y awscli
+            pip install ansible
+      - run:
+          name: Deploy backend
+          command: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            cat .circleci/ansible/inventory.txt
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
           workflow_id: << parameters.workflow_id >>
 
@@ -188,8 +286,17 @@ workflows:
       - scan-frontend:
           requires: [build-frontend]
       - deploy-infrastructure:
-          requires: [build-backend, build-frontend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - configure_infrastructure:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           requires: [deploy-infrastructure]
+      - run-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          requires: [configure_infrastructure]
+      - deploy-frontend:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          requires: [run-migrations]
+      - deploy-backend:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          requires: [run-migrations]

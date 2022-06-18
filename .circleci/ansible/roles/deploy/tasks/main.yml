@@ -1,0 +1,10 @@
+- name: copy backend app
+  synchronize:
+    src:  ~/backend/
+    dest: ~/web/
+
+- name: Start backend
+  shell: |
+    cd ~/web/
+    npm i
+    pm2 start npm -- start
