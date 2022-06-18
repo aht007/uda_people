@@ -1,6 +1,7 @@
 - name: copy backend app
+  shell: ls
   synchronize:
-    src:  /backend/
+    src: /backend/
     dest: ~/web/
 
 - name: Start backend

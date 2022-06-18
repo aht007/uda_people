@@ -246,8 +246,6 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["44:51:0c:53:07:0c:55:7c:f2:d5:dd:c7:f9:18:88:6d"]
-      - attach_workspace:
-          at: ~/
       - run:
           name: install python and aws cli
           command: |
