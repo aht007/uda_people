@@ -11,7 +11,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${workflow_id}" --recursive
+            aws s3 rm s3://udapeople-${workflow_id} --recursive
             aws cloudformation delete-stack --stack-name udapeople-backend-${workflow_id}
             aws cloudformation delete-stack --stack-name udapeople-frontend-${workflow_id}
 jobs:
@@ -253,6 +253,7 @@ jobs:
           command: |
             apt-get update
             apt-get install -y awscli
+            apt-get install -y rsync
             pip install ansible
       - run:
           name: Deploy backend
