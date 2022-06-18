@@ -11,8 +11,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name backend-${workflow_id}
-            aws cloudformation delete-stack --stack-name frontend-${workflow_id}
+            aws s3 rm "s3://udapeople-${workflow_id}" --recursive
+            aws cloudformation delete-stack --stack-name udapeople-backend-${workflow_id}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${workflow_id}
 jobs:
   build-frontend:
     docker:
@@ -187,8 +188,7 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            apt-get update
-            apt-get install -y awscli
+            yum install -y awscli
       - run:
           name: Run migrations
           command: |
