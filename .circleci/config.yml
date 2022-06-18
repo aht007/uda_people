@@ -183,10 +183,6 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install Dependencies
-          command: |
-            yum install -y awscli
-      - run:
           name: Run migrations
           command: |
             cd backend
