@@ -329,10 +329,10 @@ jobs:
             else
               exit 1
             fi
-      # - revert-migrations:
-      #     workflow_id: << parameters.workflow_id >>
-      - destroy-environment:
+      - revert-migrations:
           workflow_id: << parameters.workflow_id >>
+      # - destroy-environment:
+      #     workflow_id: << parameters.workflow_id >>
 
   cloudfront-update:
     docker:
