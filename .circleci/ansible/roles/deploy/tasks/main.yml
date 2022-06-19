@@ -1,11 +1,31 @@
-- name: copy backend app
-  synchronize:
-    src: /tmp/workspace/backend/
-    dest: ~/web/
+---
+- name: "clean up server"
+  become: true
+  shell: "sudo rm -rf *"
+- name: "git clone repo"
+  become: true
+  shell: "git clone https://github.com/aht007/uda_people.git"
+- name: "install dependency"
+  become: true
+  shell: "sudo npm install"
+  args:
+    chdir: "/home/ubuntu/uda_people/backend"
+- name: "install peers dependency"
+  become: true
+  shell: "sudo npm install -g npm-install-peers"
+  args:
+    chdir: "/home/ubuntu/uda_people/backend"
+- name: "build backend server"
+  become: true
+  shell: "npm run build"
+  args:
+    chdir: "/home/ubuntu/uda_people/backend"
+- name: "run backend server"
+  become: true
+  shell: "pm2 start npm --name 'udapeople' -- start"
+  args:
+    chdir: "/home/ubuntu/uda_people/backend"
+  async: 45
+  poll: 0
 
-- name: Start backend
-  shell: |
-    cd ~/web/
-    npm i
-    pm2 stop default
-    pm2 start npm -- start
+# https://knowledge.udacity.com/questions/715098 Took help from this answer in udacity forums
