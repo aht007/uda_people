@@ -331,8 +331,8 @@ jobs:
             fi
       - revert-migrations:
           workflow_id: << parameters.workflow_id >>
-      - destroy-environment:
-          workflow_id: << parameters.workflow_id >>
+      # - destroy-environment:
+      #     workflow_id: << parameters.workflow_id >>
 
 workflows:
   default:
