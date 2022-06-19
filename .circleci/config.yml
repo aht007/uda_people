@@ -309,7 +309,7 @@ jobs:
           command: |
             BACKEND_IP=$(sed -n '2p' .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"
-            export API_URL="http://${BACKEND_IP}:3030"
+            export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
@@ -331,8 +331,44 @@ jobs:
             fi
       - revert-migrations:
           workflow_id: << parameters.workflow_id >>
-      # - destroy-environment:
-      #     workflow_id: << parameters.workflow_id >>
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
+
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    working_directory: /tmp/workspace
+    steps:
+      - checkout
+      - run: |
+          yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -y
+          yum install jq -y
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            export OldWorkflowID=$(aws cloudformation \
+                list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                --no-paginate --output text)
+            export newWorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+            echo New workflow Id: "${newWorkflowID}"
+            echo Old workflow Id: "${OldWorkflowID}"
+            if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]] && [[ -n "$OldWorkflowID" ]]
+            then
+              echo deleting old stuff
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "cloudfront-stack-${OldWorkflowID}"
+            fi
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --tags project=assignment3 \
+            --stack-name "cloudfront-stack-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+          environment:
+            TERM: xterm-color
+
+      - destroy-environment
 
 workflows:
   default:
