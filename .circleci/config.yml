@@ -14,6 +14,25 @@ commands:
             aws s3 rm "s3://udapeople-<< parameters.workflow_id >>" --recursive
             aws cloudformation delete-stack --stack-name "udapeople-backend-<< parameters.workflow_id >>"
             aws cloudformation delete-stack --stack-name "udapeople-frontend-<< parameters.workflow_id >>"
+
+  revert-migrations:
+    description: Revert the last migration
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl --insecure  https://kvdb.io/AYFnzAZ9FsMiksutaHQrvr/migration_<< parameters.workflow_id >>)
+            if (( $SUCCESS == 1 ));
+            then
+                cd ~/project/backend
+                npm install
+                npm run migration:revert
+            fi
+
 jobs:
   build-frontend:
     docker:
@@ -178,6 +197,9 @@ jobs:
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
+    parameters:
+      workflow_id:
+        type: string
     steps:
       - checkout
       - attach_workspace:
@@ -191,10 +213,11 @@ jobs:
       - run:
           name: Send migration results to memstash
           command: |
+            cat ./backend/migrations_dump.log
             if grep -q "has been executed successfully." ./backend/migrations_dump.log
             then
                 # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-                curl https://kvdb.io/AYFnzAZ9FsMiksutaHQrvr/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                curl https://kvdb.io/AYFnzAZ9FsMiksutaHQrvr/migration_<< parameters.workflow_id >>  -d '1'
             fi
 
   deploy-frontend:
@@ -306,8 +329,10 @@ jobs:
             else
               return 1
             fi
-      # - destroy-environment:
-      #     workflow_id: << parameters.workflow_id >>
+      - revert-migrations:
+          workflow_id: << parameters.workflow_id >>
+      - destroy-environment:
+          workflow_id: << parameters.workflow_id >>
 
 workflows:
   default:
@@ -330,6 +355,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure_infrastructure]
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - deploy-frontend:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           requires: [run-migrations]
