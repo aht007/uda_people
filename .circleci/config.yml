@@ -307,6 +307,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
+            sleep 120
             BACKEND_IP=$(sed -n '2p' .circleci/ansible/inventory.txt)
             echo "Backend IP: ${BACKEND_IP}"
             export API_URL="http://${BACKEND_IP}:3030/api/status"
@@ -328,8 +329,8 @@ jobs:
             else
               exit 1
             fi
-      - revert-migrations:
-          workflow_id: << parameters.workflow_id >>
+      # - revert-migrations:
+      #     workflow_id: << parameters.workflow_id >>
       - destroy-environment:
           workflow_id: << parameters.workflow_id >>
 

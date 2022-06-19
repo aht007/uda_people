@@ -11,7 +11,3 @@
     - ansible_stdout_callback: yaml
   roles:
     - deploy
-  post_tasks:
-  - name: "wait 120 seconds for target connection to become reachable/usable."
-    pause:
-      seconds: 120
