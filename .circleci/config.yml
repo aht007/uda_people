@@ -326,7 +326,7 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 1
+              exit 0
             else
               exit 1
             fi
@@ -366,7 +366,7 @@ jobs:
             fi
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
-            --tags project=assignment3 \
+            --tags project=assignment3-udapeople \
             --stack-name "cloudfront-stack-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
           environment:
@@ -391,6 +391,10 @@ workflows:
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          filters:
+            branches:
+              only:
+                - master
       - configure_infrastructure:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
           requires: [deploy-infrastructure]
