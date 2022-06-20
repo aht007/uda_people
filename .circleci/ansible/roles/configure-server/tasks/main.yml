@@ -12,7 +12,9 @@
 - name: "Install NodeJs and NPM"
   apt:
     name:
-      - "nodejs"
+      - "libssl1.0-dev"
+      - "nodejs-dev"
+      - "node-gyp"
       - "npm"
     state: latest
     update_cache: yes
