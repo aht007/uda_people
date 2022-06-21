@@ -9,13 +9,12 @@
   apt:
     upgrade: yes
   
-- name: "apt dist upgrade"
+- name: "resolve dependency issues"
   become: yes
   apt:
-    dist_upgrade: yes
-
-- name: "fix deps issue"
-  shell: "apt install libssl-dev=3.0.2-0ubuntu1.1 -y"
+    name: 
+      - "libssl-dev"
+      - "openssl"
 
 - name: "Install NodeJs and NPM"
   become: yes
