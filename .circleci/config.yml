@@ -45,6 +45,7 @@ jobs:
           name: Build front-end
           command: |
             cd frontend
+            npm set timeout=100000
             npm install
             npm run build
       - save_cache:
@@ -62,6 +63,8 @@ jobs:
           name: Back-end build
           command: |
             cd backend
+            npm set timeout=100000
+            npm install
             npm run build
       - save_cache:
           paths: [backend/node_modules]
@@ -104,7 +107,6 @@ jobs:
           name: Scan front-end
           command: |
             cd frontend
-            npm install
             npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
@@ -120,7 +122,6 @@ jobs:
           name: Scan back-end
           command: |
             cd backend
-            npm install
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm audit --audit-level=critical
