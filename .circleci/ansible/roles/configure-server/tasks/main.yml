@@ -11,7 +11,7 @@
   
 - name: "resolve dependency issues"
   become: yes
-  shell: "apt-get install libssl/xenial libssl-dev/xenial openssl/xenial"
+  shell: "apt-get install libssl libssl-dev openssl"
 
 - name: "Install NodeJs and NPM"
   become: yes
