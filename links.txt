@@ -1,1 +1,5 @@
 REPO URL: https://github.com/aht007/uda_people
+S3 BUCKET: http://udapeople-7bda80d.s3-website-us-east-1.amazonaws.com/
+CLOUDFRONT: d3d036m9qi30q6.cloudfront.net
+SERVER PUBLIC URL: ec2-54-167-108-1.compute-1.amazonaws.com:3030/api/status
+Prometheus: http://ec2-54-198-49-34.compute-1.amazonaws.com:9090/targets
