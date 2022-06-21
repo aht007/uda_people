@@ -1,29 +1,28 @@
 ---
 - name: "update apt packages."
-  become: yes
   apt:
     update_cache: yes
 
 - name: "upgrade packages"
-  become: yes
   apt:
     upgrade: yes
 
-- name: "Install NodeJs and NPM"
+- name: remove dependencies that are no longer required
   apt:
-    name:
-      - "libssl1.0-dev"
-      - "nodejs-dev"
-      - "node-gyp"
-      - "npm"
+    autoremove: yes
+
+- name: "install dependencies."
+  apt:
+    name: ["nodejs"]
     state: latest
     update_cache: yes
-  
-- name: "Install pm2"
+
+- name: "install pm2"
   npm:
-    name: "pm2"
-    global: "yes"
-    state: latest
+    name: pm2
+    global: yes
+    production: yes
+    state: present
 
 - name: "Install Python"
   apt:
@@ -31,7 +30,7 @@
       - "python3-pip"
       - "python3-venv"
 
-- name: "Creates directory"
+- name: Creates directory
   file:
     path: ~/web
     state: directory
