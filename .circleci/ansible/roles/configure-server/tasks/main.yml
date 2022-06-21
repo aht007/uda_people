@@ -8,13 +8,17 @@
   become: yes
   apt:
     upgrade: yes
+  
+- name: "resolve dependency issues"
+  become: yes
+  shell: "apt-get install libssl1.0.0=1.0.2g-1ubuntu4.1"
 
 - name: "Install NodeJs and NPM"
+  become: yes
   apt:
     name:
       - "nodejs"
       - "npm"
-    state: latest
     update_cache: yes
   
 - name: "Install pm2"
