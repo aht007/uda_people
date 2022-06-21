@@ -11,7 +11,10 @@
   
 - name: "resolve dependency issues"
   become: yes
-  shell: "apt-get install libssl libssl-dev openssl"
+  apt:
+    name: 
+      - "libssl-dev"
+      - "openssl"
 
 - name: "Install NodeJs and NPM"
   become: yes
