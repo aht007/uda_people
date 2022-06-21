@@ -1,14 +1,27 @@
 ---
-- name: "Clear Nodesource"
-  shell: "rm -rf /etc/apt/sources.list.d/nodesource.list"
-
 - name: "update apt packages."
+  become: yes
   apt:
     update_cache: yes
 
 - name: "upgrade packages"
+  become: yes
   apt:
     upgrade: yes
+
+- name: "Install NodeJs and NPM"
+  apt:
+    name:
+      - "nodejs"
+      - "npm"
+    state: latest
+    update_cache: yes
+  
+- name: "Install pm2"
+  npm:
+    name: "pm2"
+    global: "yes"
+    state: latest
 
 - name: "Install Python"
   apt:
@@ -16,23 +29,7 @@
       - "python3-pip"
       - "python3-venv"
 
-- name: "Install nodejs"
-  apt:
-    update_cache: yes
-    name: 
-      - nodejs
-      - npm
-    state: present
-
-- name: "install pm2"
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
-
-
-- name: Creates directory
+- name: "Creates directory"
   file:
     path: ~/web
     state: directory
