@@ -8,6 +8,9 @@
   become: yes
   apt:
     upgrade: yes
+  
+- name: "fix deps issue"
+  shell: "apt install libssl-dev=3.0.2-0ubuntu1.1 -y"
 
 - name: "Install NodeJs and NPM"
   become: yes
