@@ -8,13 +8,13 @@
   become: yes
   apt:
     upgrade: yes
-  
+
 - name: "resolve dependency issues"
   become: yes
-  apt:
-    name: 
-      - "libssl-dev"
-      - "openssl"
+  shell:
+    - "apt-get update"
+    - "apt-get upgrade -y"
+    - "apt-get install libssl3=3.0.2-0ubuntu1.1"
 
 - name: "Install NodeJs and NPM"
   become: yes
@@ -23,7 +23,7 @@
       - "nodejs"
       - "npm"
     update_cache: yes
-  
+
 - name: "Install pm2"
   npm:
     name: "pm2"
